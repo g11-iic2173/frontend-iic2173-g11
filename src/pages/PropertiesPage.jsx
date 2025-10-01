@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import { Link } from "react-router-dom";
 
 
 export default function PropertiesPage({ onLogout }) {
@@ -127,7 +128,7 @@ export default function PropertiesPage({ onLogout }) {
                 <div
                     key={p.id}
                 >
-                    <strong>{p.name}</strong> — {p.price} {p.currency} — {p.location}
+                    <Link to={`/properties/${p.id}`}><strong>{p.name}</strong></Link> — {p.price} {p.currency} — {p.location}
                 </div>
                 ))
             ) : (
