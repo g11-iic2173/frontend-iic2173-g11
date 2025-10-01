@@ -25,6 +25,7 @@ function App() {
           <Route path="/" element={<PropertiesPage onLogout={handleLogout} />} />
           <Route path="/properties/:id" element={<PropertyDetailPage />} />
           <Route path="/my-visits" element={<MyVisitsPage />} />
+          
         </Routes>
       </BrowserRouter>
     ) : (

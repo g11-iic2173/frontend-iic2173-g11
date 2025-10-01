@@ -105,6 +105,14 @@ export default function PropertyDetailPage() {
       <button disabled={!canBuy} onClick={handleBuy}>
         {canBuy ? "Comprar agendamiento" : "Saldo insuficiente o sin cupos"}
       </button>
+
+      <div style={{ marginTop: 12 }}>
+        <Link to="/my-visits">Ver mis visitas</Link>
+      </div>
     </div>
+    
+
+
+
   );
 }
