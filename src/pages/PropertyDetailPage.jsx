@@ -62,8 +62,8 @@ export default function PropertyDetailPage() {
 
   const handleBuy = async () => {
     try {
-      const res = await axios.post(`${backend}/purchases`, { propertieId: property.id }, { headers: authHeader });
-      alert("Compra iniciada. Estado: " + res.data.intent.status);
+      const res = await axios.post(`${backend}/purchases`, { property_url: property.url }, { headers: authHeader });
+      alert("Compra iniciada. Estado: " + (res.data.status || "pending"));
       //refrescamos para ver offers actualizados
       await fetchProperty();
       await fetchWallet();
