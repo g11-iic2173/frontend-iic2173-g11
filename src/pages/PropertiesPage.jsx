@@ -29,14 +29,14 @@ export default function PropertiesPage({ onLogout }) {
       let res;
       if (filters.id) {
         // busquedad por id
-        res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/properties/${filters.id}`, {
+        res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/properties/${filters.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setProperties([res.data]);
       } else {
         // otras busquedad
         const params = { ...filters, page: resetPage ? 1 : page, limit };
-        res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/properties`, {
+        res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/properties`, {
           params,
           headers: { Authorization: `Bearer ${token}` },
         });

@@ -6,7 +6,7 @@ export default function MyVisitsPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
-  const backend = import.meta.env.VITE_BACKEND_URL;
+  const backend = import.meta.env.VITE_API_BASE_URL;
   const authHeader = { Authorization: `Bearer ${token}` };
 
   useEffect(() => {

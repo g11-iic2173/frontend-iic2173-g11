@@ -13,7 +13,7 @@ export default function PropertyDetailPage() {
 
   const token = localStorage.getItem("token");
   const authHeader = { Authorization: `Bearer ${token}` };
-  const backend = import.meta.env.VITE_BACKEND_URL;
+  const backend = import.meta.env.VITE_API_BASE_URL;
 
   const fetchProperty = async () => {
     try {
