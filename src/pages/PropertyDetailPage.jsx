@@ -12,15 +12,17 @@ export default function PropertyDetailPage() {
   const [wallet, setWallet] = useState({ balance: 0 });
   const [recharge, setRecharge] = useState("");
 
-  const API = import.meta.env.VITE_API_BASE;
+  const API = import.meta.env.VITE_API_BASE_URL;
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem("token");
+    console.log(token);
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
   const fetchProperty = async () => {
     try {
+
       const res = await axios.get(`${API}/properties/${id}`);
       setProperty(res.data);
       setError("");
@@ -39,6 +41,8 @@ export default function PropertyDetailPage() {
         setWallet({ balance: 0 });
         return;
       }
+
+
       const res = await axios.get(`${API}/wallet`, { headers });
       setWallet(res.data);
     } catch {

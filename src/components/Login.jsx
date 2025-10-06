@@ -14,6 +14,7 @@ export default function Login({ onLogin, onToggle }) {
       });
 
       localStorage.setItem("token", res.data.access_token);
+
       onLogin();
     } catch (err) {
       alert(err.response?.data?.error || "Error al iniciar sesión");

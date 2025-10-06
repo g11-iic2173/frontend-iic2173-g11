@@ -19,7 +19,7 @@ export default function Signup({ onToggle, onLogin }) {
 
       onLogin();
     } catch (err) {
-      console.error("❌ Error en /signup:", err); // 👈 log completo
+      console.error("Error en /signup:", err);
       alert(err.response?.data?.error || "Error al registrar usuario");
     }
   };
