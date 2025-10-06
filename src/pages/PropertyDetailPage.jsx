@@ -15,14 +15,13 @@ export default function PropertyDetailPage() {
   const API = import.meta.env.VITE_API_BASE_URL;
 
   const getAuthHeaders = () => {
-    const token = localStorage.getItem("token");
-    console.log(token);
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    const t = localStorage.getItem("token");
+    return t ? { Authorization: `Bearer ${t}` } : {};
   };
 
   const fetchProperty = async () => {
     try {
-
+      // ❗️ NO agregamos /api, ya viene en API
       const res = await axios.get(`${API}/properties/${id}`);
       setProperty(res.data);
       setError("");
@@ -37,16 +36,16 @@ export default function PropertyDetailPage() {
     try {
       const headers = getAuthHeaders();
       if (!headers.Authorization) {
-        // si no hay sesión, deja el balance en 0 silenciosamente
         setWallet({ balance: 0 });
         return;
       }
-
-
-      const res = await axios.get(`${API}/wallet`, { headers });
+      // ❗️ OJO: sin "}" al final; agrego cache-buster para evitar caché
+      const res = await axios.get(`${API}/wallet`, {
+        headers,
+        params: { _: Date.now() },
+      });
       setWallet(res.data);
     } catch {
-      // si falla, el balance queda en 0
       setWallet({ balance: 0 });
     }
   };
@@ -67,6 +66,30 @@ export default function PropertyDetailPage() {
   const balance = Number(wallet.balance) || 0;
   const canBuy = offers > 0 && balance >= tenPercent;
 
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  const confirmRechargeReflected = async (expectedMinBalance) => {
+    const headers = getAuthHeaders();
+    const maxAttempts = 6;
+    let delay = 500;
+    for (let i = 0; i < maxAttempts; i++) {
+      try {
+        const res = await axios.get(`${API}/wallet`, {
+          headers,
+          params: { _: Date.now() },
+        });
+        const current = Number(res.data?.balance) || 0;
+        if (current >= expectedMinBalance - 1e-6) {
+          setWallet(res.data);
+          return true;
+        }
+      } catch {}
+      await sleep(delay);
+      delay = Math.min(delay + 500, 3000);
+    }
+    return false;
+  };
+
   const handleRecharge = async () => {
     const amount = Number(recharge);
     if (!Number.isFinite(amount) || amount <= 0) {
@@ -76,18 +99,31 @@ export default function PropertyDetailPage() {
     const headers = getAuthHeaders();
     if (!headers.Authorization) {
       alert("Debes iniciar sesión para recargar tu billetera");
-      // navigate("/login"); // descomenta si quieres redirigir
       return;
     }
+
+    const prevBalance = Number(wallet.balance) || 0;
+    // optimista
+    setWallet((w) => ({ ...w, balance: prevBalance + amount }));
+    setRecharge("");
+
     try {
-      await axios.post(
+      // ❗️ sin /api extra y sin "}" al final
+      const res = await axios.post(
         `${API}/wallet/recharge`,
         { amount },
         { headers }
       );
-      setRecharge("");
-      fetchWallet();
+
+      if (res?.data && typeof res.data.balance !== "undefined") {
+        setWallet(res.data);
+        return;
+      }
+      const ok = await confirmRechargeReflected(prevBalance + amount);
+      if (!ok) await fetchWallet();
     } catch (e) {
+      // revertir optimista si falla
+      setWallet((w) => ({ ...w, balance: prevBalance }));
       alert(e?.response?.data?.error || "No se pudo recargar");
     }
   };
@@ -96,22 +132,18 @@ export default function PropertyDetailPage() {
     const headers = getAuthHeaders();
     if (!headers.Authorization) {
       alert("Debes iniciar sesión para comprar/agendar");
-      // navigate("/login");
       return;
     }
     try {
+      // ❗️ /purchases (API ya trae /api)
       const res = await axios.post(
         `${API}/purchases`,
-        { property_url: property.url }, // si tu back usa id, cambia a { property_id: property.id }
+        { property_url: property.url }, // o { property_id: property.id } si tu back lo espera así
         { headers }
       );
       alert("Compra iniciada. Estado: " + (res.data.status || "pending"));
-
-      // refrescar datos
       await fetchProperty();
       await fetchWallet();
-
-      // o redirigir a mis visitas
       // navigate("/my-visits");
     } catch (e) {
       alert(e?.response?.data?.error || "No se pudo comprar");
