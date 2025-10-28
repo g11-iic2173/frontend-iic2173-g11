@@ -83,7 +83,10 @@ export default function PropertyDetailPage() {
           setWallet(res.data);
           return true;
         }
-      } catch {}
+      } catch (error_) {
+        // ignore transient errors while polling wallet (log for debugging)
+        console.debug("wallet poll error:", error_);
+      }
       await sleep(delay);
       delay = Math.min(delay + 500, 3000);
     }
@@ -115,7 +118,7 @@ export default function PropertyDetailPage() {
         { headers }
       );
 
-      if (res?.data && typeof res.data.balance !== "undefined") {
+      if (res?.data?.balance !== undefined) {
         setWallet(res.data);
         return;
       }
@@ -137,14 +140,36 @@ export default function PropertyDetailPage() {
     try {
       // ❗️ /purchases (API ya trae /api)
       const res = await axios.post(
-        `${API}/purchases`,
+        `${API}/purchases/transaction`,
         { property_url: property.url }, // o { property_id: property.id } si tu back lo espera así
         { headers }
       );
+      // Si el backend devuelve URL y token para redirigir a pasarela, navegar a la página de confirmación
+      if (res?.data?.deposit_url && res?.data?.deposit_token) {
+        const price = Number(property.price) || 0;
+        const tenPercent = price * 0.1;
+        // pass property identifiers so the confirm page can create intents and submit the form
+        navigate(`/confirm-purchase`, {
+          state: {
+            // gateway fields
+            deposit_url: res.data.deposit_url,
+            deposit_token: res.data.deposit_token,
+            property_id: property.id,
+            property_url: property.url,
+            amount: tenPercent,
+            title: property.name,
+            type: property.type || "property",
+            price,
+          },
+        });
+        return;
+      }
+
       alert("Compra iniciada. Estado: " + (res.data.status || "pending"));
+      console.log("Purchase response:", res.data);
       await fetchProperty();
       await fetchWallet();
-      // navigate("/my-visits");
+      
     } catch (e) {
       alert(e?.response?.data?.error || "No se pudo comprar");
       await fetchProperty();

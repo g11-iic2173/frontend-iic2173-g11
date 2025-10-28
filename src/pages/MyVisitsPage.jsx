@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "axios";
 
 export default function MyVisitsPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const API = import.meta.env.VITE_API_BASE; 
+  const API = import.meta.env.VITE_API_BASE || "http://localhost:3000"; 
   const token = localStorage.getItem("token");
-  const navigate = useNavigate();
 
   const pollRef = useRef(null);   // guarda el id del setInterval
   const isMounted = useRef(false);
@@ -25,6 +24,8 @@ export default function MyVisitsPage() {
       const res = await axios.get(`${API}/purchases`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log("Endpoint:", `${API}/purchases`);
+      console.log("Purchases loaded:", res.data);
       const data = Array.isArray(res.data) ? res.data : [];
       setItems(data);
       return data;
@@ -116,41 +117,42 @@ export default function MyVisitsPage() {
           </tr>
         </thead>
         <tbody>
-          {items.map((p) => (
-            <tr key={p.id}>
-              <td style={{ padding: 8, border: "1px solid #ddd" }}>
-                {p.createdAt ? new Date(p.createdAt).toLocaleString() : "-"}
-              </td>
-              <td style={{ padding: 8, border: "1px solid #ddd" }}>
-                {p.propertie ? (
-                  <Link to={`/properties/${p.propertie.id}`}>
-                    <strong>{p.propertie.name}</strong>
-                  </Link>
-                ) : "-"}
-              </td>
-              <td style={{ padding: 8, border: "1px solid #ddd" }}>
-                {p.price_amount} {p.price_currency}
-              </td>
-              <td
-                style={{
-                  padding: 8,
-                  border: "1px solid #ddd",
-                  color:
-                    String(p.status).toUpperCase() === "APPROVED"
-                      ? "green"
-                      : String(p.status).toUpperCase() === "REJECTED"
-                      ? "red"
-                      : "orange",
-                  fontWeight: "bold",
-                }}
-              >
-                {String(p.status).toUpperCase()}
-              </td>
-              <td style={{ padding: 8, border: "1px solid #ddd", fontFamily: "monospace" }}>
-                {p.request_id ? p.request_id.slice(0, 8) : "-"}
-              </td>
-            </tr>
-          ))}
+          {items.map((p) => {
+            const statusStr = String(p.status).toUpperCase();
+            let color = "orange";
+            if (statusStr === "APPROVED") color = "green";
+            else if (statusStr === "REJECTED") color = "red";
+            return (
+              <tr key={p.id}>
+                <td style={{ padding: 8, border: "1px solid #ddd" }}>
+                  {p.createdAt ? new Date(p.createdAt).toLocaleString() : "-"}
+                </td>
+                <td style={{ padding: 8, border: "1px solid #ddd" }}>
+                  {p.propertie ? (
+                    <Link to={`/properties/${p.propertie.id}`}>
+                      <strong>{p.propertie.name}</strong>
+                    </Link>
+                  ) : "-"}
+                </td>
+                <td style={{ padding: 8, border: "1px solid #ddd" }}>
+                  {p.price_amount} {p.price_currency}
+                </td>
+                <td
+                  style={{
+                    padding: 8,
+                    border: "1px solid #ddd",
+                    color,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {statusStr}
+                </td>
+                <td style={{ padding: 8, border: "1px solid #ddd", fontFamily: "monospace" }}>
+                  {p.request_id ? p.request_id.slice(0, 8) : "-"}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
