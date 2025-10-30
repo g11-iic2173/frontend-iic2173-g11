@@ -42,7 +42,9 @@ jobs:
         #publica solo cambios y elimina archivos obsoletos del bucket
 
       - name: Invalidate CloudFront cache
-        run: aws cloudfront create-invalidation \
-              --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-              --paths "/*"
+        run: |
+          aws cloudfront create-invalidation \
+          --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+          --paths "/*"
+
         #borra cache hg
