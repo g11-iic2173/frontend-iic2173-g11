@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -9,7 +9,6 @@ export default function PurchaseCompletedPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
-  const inFlightRef = useRef(false);
 
   const API = import.meta.env.VITE_API_BASE_URL;
 
@@ -22,46 +21,29 @@ export default function PurchaseCompletedPage() {
     const qp = new URLSearchParams(search);
     const token_ws = qp.get("token_ws");
     const property_id = qp.get("property_id");
+    const request_id = qp.get("request_id");
 
     if (!token_ws || !property_id) {
       setError("Falta token_ws o property_id en la URL");
       setLoading(false);
       return;
     }
-
-    // Deduplicación: evita dobles llamadas (StrictMode, re-mount, etc.)
-    const commitKey = `commit:${token_ws}:${property_id}`;
-    const status = sessionStorage.getItem(commitKey);
-    if (inFlightRef.current || status === "started" || status === "done") {
-      return;
-    }
-
-    inFlightRef.current = true;
-    sessionStorage.setItem(commitKey, "started");
-
     (async () => {
       setLoading(true);
       setError("");
       try {
         const headers = getAuthHeaders();
-        const res = await axios.post(
-          `${API}/purchases/commit`,
-          { token_ws, property_id },
-          { headers }
-        );
-        setResult(res.data);
-        sessionStorage.setItem(commitKey, "done");
+        const body = request_id ? { token_ws, property_id, request_id } : { token_ws, property_id };
+        const res = await axios.post(`${API}/purchases/commit`, body, { headers });
+        setResult(res.data || null);
       } catch (e) {
+        console.error("commit error:", e?.response?.data || e.message || e);
         setError(e?.response?.data?.error || "No se pudo confirmar la compra");
-        // Permitir reintento en caso de error
-        sessionStorage.removeItem(commitKey);
       } finally {
-        inFlightRef.current = false;
         setLoading(false);
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
+  }, [search, API]);
 
   if (loading) return <p style={{ padding: 16 }}>Confirmando compra…</p>;
 
@@ -109,7 +91,7 @@ export default function PurchaseCompletedPage() {
 
       <div style={{ marginTop: 16 }}>
         <button onClick={() => navigate("/my-visits")}>Ir a mis visitas</button>
-        <button onClick={() => navigate(-1)} style={{ marginLeft: 8 }}>
+        <button onClick={() => navigate("/")} style={{ marginLeft: 8 }}>
           Volver
         </button>
       </div>

@@ -28,7 +28,6 @@ function App() {
           <Route path="/properties/:id" element={<PropertyDetailPage />} />
           <Route path="/my-visits" element={<MyVisitsPage />} />
           <Route path="/confirm-purchase" element={<ConfirmPurchasePage />} />
-          <Route path="/purchase-completed" element={<PurchaseCompletedPage />} />
           <Route path="/completed-purchase" element={<PurchaseCompletedPage />} />
           
         </Routes>
