@@ -93,12 +93,10 @@ export default function ConfirmPurchasePage() {
 
         <div className="flex flex-col gap-2">
           <p className="text-2xl font-bold">{title}</p>
-          <p>Tipo: {type}</p>
-          <p>Cantidad: {amount}</p>
         </div>
 
         <button disabled={submitting} className="bg-sky-500 text-white rounded px-5 py-2" type="submit">
-          {buttonLabel}
+          Compra de {amount} CL
         </button>
       </form>
     </div>

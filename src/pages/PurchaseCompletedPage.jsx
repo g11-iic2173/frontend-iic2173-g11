@@ -24,7 +24,7 @@ export default function PurchaseCompletedPage() {
     const request_id = qp.get("request_id");
 
     if (!token_ws || !property_id) {
-      setError("Falta token_ws o property_id en la URL");
+      setError("Compra anulada por el Usuario.");
       setLoading(false);
       return;
     }
@@ -38,7 +38,7 @@ export default function PurchaseCompletedPage() {
         setResult(res.data || null);
       } catch (e) {
         console.error("commit error:", e?.response?.data || e.message || e);
-        setError(e?.response?.data?.error || "No se pudo confirmar la compra");
+        setError(e?.response?.data?.error || "Pago Rechazado por Transbank");
       } finally {
         setLoading(false);
       }
@@ -53,7 +53,7 @@ export default function PurchaseCompletedPage() {
         <h2>Resultado de compra</h2>
         <p style={{ color: "red" }}>{error}</p>
         <div style={{ marginTop: 12 }}>
-          <button onClick={() => navigate(-1)}>Volver</button>
+          <button onClick={() => navigate("/my-visits")}>Volver</button>
         </div>
       </div>
     );
@@ -64,7 +64,7 @@ export default function PurchaseCompletedPage() {
         <h2>Resultado de compra</h2>
         <p>No se recibió respuesta del servidor.</p>
         <div style={{ marginTop: 12 }}>
-          <button onClick={() => navigate(-1)}>Volver</button>
+          <button onClick={() => navigate("/my-visits")}>Volver</button>
         </div>
       </div>
     );
@@ -91,7 +91,7 @@ export default function PurchaseCompletedPage() {
 
       <div style={{ marginTop: 16 }}>
         <button onClick={() => navigate("/my-visits")}>Ir a mis visitas</button>
-        <button onClick={() => navigate("/")} style={{ marginLeft: 8 }}>
+        <button onClick={() => navigate("/my-visits")} style={{ marginLeft: 8 }}>
           Volver
         </button>
       </div>
