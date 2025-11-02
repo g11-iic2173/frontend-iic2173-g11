@@ -64,7 +64,7 @@ export default function PropertyDetailPage() {
   const tenPercent = price * 0.1;
   const offers = Number(property.offers) || 0;
   const balance = Number(wallet.balance) || 0;
-  const canBuy = offers > 0 && balance >= tenPercent;
+  const canBuy = offers > 0 //&& balance >= tenPercent;
 
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -179,7 +179,18 @@ export default function PropertyDetailPage() {
 
   return (
     <div style={{ padding: 16 }}>
-      <Link to="/">&larr; Volver</Link>
+      <button
+          onClick={() => navigate(-1)} 
+          style={{
+            background: "none",
+            border: "none",
+            color: "#007bff",
+            fontSize: "1rem",
+            cursor: "pointer",
+          }}
+        >
+          &larr; Volver
+        </button>
 
       <h2>{property.name}</h2>
       {property.img && (
@@ -198,7 +209,7 @@ export default function PropertyDetailPage() {
         <strong>{tenPercent.toFixed(2)} {property.currency}</strong>
       </p>
 
-      <div style={{ margin: "12px 0" }}>
+      {/* <div style={{ margin: "12px 0" }}>
         <p><strong>Mi saldo:</strong> {balance.toFixed(2)}</p>
         <input
           type="number"
@@ -208,10 +219,10 @@ export default function PropertyDetailPage() {
           style={{ marginRight: 8 }}
         />
         <button onClick={handleRecharge}>Recargar</button>
-      </div>
+      </div> */}
 
       <button disabled={!canBuy} onClick={handleBuy}>
-        {canBuy ? "Comprar agendamiento" : "Saldo insuficiente o sin cupos"}
+        {canBuy ? "Comprar agendamiento" : "Saldo cupos"}
       </button>
 
       <div style={{ marginTop: 12 }}>
