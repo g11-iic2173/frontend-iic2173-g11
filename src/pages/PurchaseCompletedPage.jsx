@@ -53,7 +53,7 @@ export default function PurchaseCompletedPage() {
         <h2>Resultado de compra</h2>
         <p style={{ color: "red" }}>{error}</p>
         <div style={{ marginTop: 12 }}>
-          <button onClick={() => navigate("/my-visits")}>Volver</button>
+          <button onClick={() => navigate("/")}>Volver</button>
         </div>
       </div>
     );
@@ -64,7 +64,7 @@ export default function PurchaseCompletedPage() {
         <h2>Resultado de compra</h2>
         <p>No se recibió respuesta del servidor.</p>
         <div style={{ marginTop: 12 }}>
-          <button onClick={() => navigate("/my-visits")}>Volver</button>
+          <button onClick={() => navigate("/")}>Volver</button>
         </div>
       </div>
     );
@@ -91,7 +91,7 @@ export default function PurchaseCompletedPage() {
 
       <div style={{ marginTop: 16 }}>
         <button onClick={() => navigate("/my-visits")}>Ir a mis visitas</button>
-        <button onClick={() => navigate("/my-visits")} style={{ marginLeft: 8 }}>
+        <button onClick={() => navigate("/")} style={{ marginLeft: 8 }}>
           Volver
         </button>
       </div>
