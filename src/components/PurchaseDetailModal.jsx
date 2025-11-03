@@ -28,7 +28,7 @@ export default function PurchaseDetailModal({ open, onClose, purchaseData }) {
 
   if (!open) return null;
 
-  // --- Determinar color y traducción del estado ---
+  // estado
   const statusStr = purchase ? String(purchase.status).toUpperCase() : "";
   let color = "orange";
   let statusEs = "Pendiente";
@@ -49,7 +49,6 @@ export default function PurchaseDetailModal({ open, onClose, purchaseData }) {
 
   return (
     <>
-      {/* Fondo oscuro */}
       <div
         onClick={onClose}
         style={{
@@ -60,7 +59,6 @@ export default function PurchaseDetailModal({ open, onClose, purchaseData }) {
         }}
       />
 
-      {/* Panel lateral */}
       <div
         style={{
           position: "fixed",
@@ -76,7 +74,7 @@ export default function PurchaseDetailModal({ open, onClose, purchaseData }) {
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Botón cerrar */}
+
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
           <button
             onClick={onClose}
@@ -91,7 +89,6 @@ export default function PurchaseDetailModal({ open, onClose, purchaseData }) {
           </button>
         </div>
 
-        {/* Contenido */}
         <div style={{ padding: "0.75rem 1.5rem 1.5rem 1.5rem" }}>
           {loading ? (
             <p>Cargando detalle...</p>
@@ -99,7 +96,7 @@ export default function PurchaseDetailModal({ open, onClose, purchaseData }) {
             <p style={{ color: "red" }}>{error}</p>
           ) : (
             <>
-              {/* 🏠 Datos de la propiedad */}
+              {/* Datos de la propiedad */}
               <h2 style={{ margin: "0 0 12px 0" }}>Propiedad</h2>
               {purchase.propertie ? (
                 <div>
@@ -118,7 +115,6 @@ export default function PurchaseDetailModal({ open, onClose, purchaseData }) {
                     />
                   )}
 
-                  {/* Nombre clickeable */}
                   <p style={{ fontWeight: "bold", fontSize: "1.1rem" }}>
                     <Link
                       to={`/properties/${purchase.propertie.id}`}
@@ -134,13 +130,6 @@ export default function PurchaseDetailModal({ open, onClose, purchaseData }) {
 
                   <p style={{ color: "#555" }}>{purchase.propertie.location}</p>
 
-                  <p>
-                    <strong>Visitas disponibles:</strong>{" "}
-                    {purchase.propertie.offers !== undefined
-                      ? purchase.propertie.offers
-                      : "No disponible"}
-                  </p>
-
                   <p style={{ marginTop: 10 }}>
                     <strong>Precio total:</strong>{" "}
                     {purchase.propertie.price} {purchase.propertie.currency}
@@ -154,7 +143,6 @@ export default function PurchaseDetailModal({ open, onClose, purchaseData }) {
                 <p>Sin información de la propiedad</p>
               )}
 
-              {/* 📋 Detalle de compra */}
               <h2>Detalle de compra</h2>
               <div>
                 <p>
@@ -176,25 +164,29 @@ export default function PurchaseDetailModal({ open, onClose, purchaseData }) {
               </div>
 
               {/* 📄 Descargar boleta */}
-              {statusStr === "ACCEPTED" || statusStr === "APPROVED" ? (
+              {(statusStr === "ACCEPTED" || statusStr === "APPROVED") && (
                 <div style={{ marginTop: 16 }}>
-                  <a
-                    href={`http://localhost:3001/purchases/${purchase.id}/receipt`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      backgroundColor: "#007bff",
-                      color: "#fff",
-                      padding: "10px 16px",
-                      borderRadius: 8,
-                      textDecoration: "none",
-                      display: "inline-block",
-                    }}
-                  >
-                    📄 Descargar boleta PDF
-                  </a>
+                  {purchase.receipt_url ? (
+                    <button
+                      onClick={() => window.open(purchase.receipt_url, "_blank")}
+                      style={{
+                        backgroundColor: "#28a745",
+                        color: "#fff",
+                        padding: "10px 16px",
+                        borderRadius: 8,
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                    >
+                      📄 Ver boleta PDF
+                    </button>
+                  ) : (
+                    <p style={{ color: "#555" }}>
+                      La boleta aún no está disponible.
+                    </p>
+                  )}
                 </div>
-              ) : null}
+              )}
             </>
           )}
         </div>

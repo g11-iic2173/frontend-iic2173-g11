@@ -89,6 +89,20 @@ export default function PurchaseCompletedPage() {
         )}
       </p>
 
+      {result.boleta_url && (
+        <p style={{ marginTop: 8 }}>
+          <strong>Boleta:</strong>{" "}
+          <a
+            href={result.boleta_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "green", textDecoration: "underline" }}
+          >
+            Ver boleta PDF
+          </a>
+        </p>
+      )}
+
       <div style={{ marginTop: 16 }}>
         <button onClick={() => navigate("/my-visits")}>Ir a mis visitas</button>
         <button onClick={() => navigate("/")} style={{ marginLeft: 8 }}>
