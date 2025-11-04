@@ -5,11 +5,13 @@ export default function Signup({ onToggle, onLogin }) {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const AUTH_URL = import.meta.env.VITE_AUTH_URL || "https://api.propiedadesarquisis.me/auth";
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${import.meta.env.VITE_AUTH_URL}/signup`, {
+      const res = await axios.post(`${AUTH_URL}/signup`, {
         email,
         username,
         password

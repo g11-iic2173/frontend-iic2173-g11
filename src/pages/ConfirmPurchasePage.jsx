@@ -20,7 +20,7 @@ export default function ConfirmPurchasePage() {
   const price = state?.price ?? state?.price_amount ?? 0;
   const type = state?.type || "property";
 
-  const API = import.meta.env.VITE_API_BASE_URL;
+  const API = import.meta.env.VITE_API_BASE_URL || "https://api.propiedadesarquisis.me/api";
 
   const getAuthHeaders = () => {
     const t = localStorage.getItem("token");

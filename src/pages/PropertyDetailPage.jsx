@@ -12,7 +12,7 @@ export default function PropertyDetailPage() {
   const [wallet, setWallet] = useState({ balance: 0 });
   const [recharge, setRecharge] = useState("");
 
-  const API = import.meta.env.VITE_API_BASE_URL;
+  const API = import.meta.env.VITE_API_BASE_URL || "https://api.propiedadesarquisis.me/api";
 
   const getAuthHeaders = () => {
     const t = localStorage.getItem("token");

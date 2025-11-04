@@ -8,7 +8,9 @@ export default function PropertiesPage({ onLogout }) {
   const [filters, setFilters] = useState({ id: "", location: "", date: "", price: "" });
   const [limit, setLimit] = useState(25);
   const [page, setPage] = useState(1);
-  const [userEmail, setUserEmail] = useState("");
+  const [userEmail, setUserEmail] = useState("")
+  const API = import.meta.env.VITE_API_BASE_URL || "https://api.propiedadesarquisis.me/api";
+
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -29,14 +31,14 @@ export default function PropertiesPage({ onLogout }) {
       let res;
       if (filters.id) {
         // busquedad por id
-        res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/properties/${filters.id}`, {
+        res = await axios.get(`${API}/properties/${filters.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setProperties([res.data]);
       } else {
         // otras busquedad
         const params = { ...filters, page: resetPage ? 1 : page, limit };
-        res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/properties`, {
+        res = await axios.get(`${API}/properties`, {
           params,
           headers: { Authorization: `Bearer ${token}` },
         });

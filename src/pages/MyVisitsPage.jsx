@@ -9,7 +9,7 @@ export default function MyVisitsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedPurchase, setSelectedPurchase] = useState(null); 
 
-  const API = import.meta.env.VITE_API_BASE_URL;
+  const API = import.meta.env.VITE_API_BASE_URL || "https://api.propiedadesarquisis.me/api";
   const token = localStorage.getItem("token");
 
   const pollRef = useRef(null);
