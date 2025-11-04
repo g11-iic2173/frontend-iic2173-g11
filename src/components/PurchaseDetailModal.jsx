@@ -5,13 +5,14 @@ export default function PurchaseDetailModal({ open, onClose, purchaseData }) {
   const [purchase, setPurchase] = useState(purchaseData || null);
   const [loading, setLoading] = useState(!purchaseData);
   const [error, setError] = useState(null);
+  const API = import.meta.env.VITE_API_BASE_URL || "https://api.propiedadesarquisis.me/api";
 
   useEffect(() => {
     if (purchaseData) return;
     const fetchPurchase = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:3001/purchases/${purchaseData?.id}`, {
+        const res = await fetch(`${API}/purchases/${purchaseData?.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Error al cargar la compra");
