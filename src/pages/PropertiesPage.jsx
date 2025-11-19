@@ -9,6 +9,9 @@ export default function PropertiesPage({ onLogout }) {
   const [limit, setLimit] = useState(25);
   const [page, setPage] = useState(1);
   const [userEmail, setUserEmail] = useState("")
+  // Recomendaciones
+  const [userId, setUserId] = useState(null);
+  const [recommendedIds, setRecommendedIds] = useState(new Set());
   const API = import.meta.env.VITE_API_BASE_URL || "https://api.propiedadesarquisis.me/api";
 
 
@@ -18,11 +21,42 @@ export default function PropertiesPage({ onLogout }) {
       try {
         const decoded = jwtDecode(token);
         setUserEmail(decoded.mail || decoded.email || "Usuario");
+        // Recomendaciones
+        setUserId(decoded.sub || decoded.id);
       } catch {
         setUserEmail("Usuario");
       }
     }
   }, []);
+
+  // Cargar recomendaciones
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      if (!userId) return;
+      
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(`${API}/recommendations?userId=${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        // Combinar todos los recommendationIds en un Set para búsqueda rápida
+        const allRecommendedIds = new Set();
+        if (Array.isArray(res.data)) {
+          res.data.forEach(rec => {
+            if (Array.isArray(rec.recommendationIds)) {
+              rec.recommendationIds.forEach(id => allRecommendedIds.add(id));
+            }
+          });
+        }
+        setRecommendedIds(allRecommendedIds);
+      } catch (err) {
+        console.error("Error cargando recomendaciones:", err.response?.data || err.message);
+      }
+    };
+
+    fetchRecommendations();
+  }, [API, userId]);
 
   const fetchData = async (resetPage = false) => {
     try {
@@ -140,8 +174,24 @@ export default function PropertiesPage({ onLogout }) {
       <div style={{ marginTop: 16 }}>
         {Array.isArray(properties) && properties.length > 0 ? (
           properties.map((p) => (
-            <div key={p.id} style={{ padding: 8, borderBottom: "1px solid #eee" }}>
-              <Link to={`/properties/${p.id}`}><strong>{p.name}</strong></Link> — {p.price} {p.currency} — {p.location}
+            <div key={p.id} style={{ padding: 8, borderBottom: "1px solid #eee", display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ flex: 1 }}>
+                <Link to={`/properties/${p.id}`}><strong>{p.name}</strong></Link> — {p.price} {p.currency} — {p.location}
+              </div>
+              
+              {recommendedIds.has(p.id) && ( /* Recomendaciones*/
+                <span style={{
+                  backgroundColor: "#4CAF50",
+                  color: "white",
+                  padding: "4px 12px",
+                  borderRadius: "12px",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                  whiteSpace: "nowrap"
+                }}>
+                  ⭐ Recomendado
+                </span>
+              )}
             </div>
           ))
         ) : (
