@@ -31,6 +31,7 @@ export default function PropertiesPage({ onLogout }) {
     const fetchRecommendations = async () => {
       try {
         const token = localStorage.getItem("token");
+        console.log('Token enviado:', token ? 'EXISTS' : 'NULL'); // debug
         if (!token) return; // si no hay token, no pedimos recomendaciones
 
         const res = await axios.get(`${API}/recommendations`, {
