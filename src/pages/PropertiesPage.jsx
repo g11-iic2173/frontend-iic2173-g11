@@ -10,7 +10,6 @@ export default function PropertiesPage({ onLogout }) {
   const [page, setPage] = useState(1);
   const [userEmail, setUserEmail] = useState("")
   // Recomendaciones
-  const [userId, setUserId] = useState(null);
   const [recommendedIds, setRecommendedIds] = useState(new Set());
   const API = import.meta.env.VITE_API_BASE_URL || "https://api.propiedadesarquisis.me/api";
 
@@ -21,22 +20,20 @@ export default function PropertiesPage({ onLogout }) {
       try {
         const decoded = jwtDecode(token);
         setUserEmail(decoded.mail || decoded.email || "Usuario");
-        // Recomendaciones
-        setUserId(decoded.sub || decoded.id);
       } catch {
         setUserEmail("Usuario");
       }
     }
   }, []);
 
-  // Cargar recomendaciones
+  // Cargar recomendaciones (el backend extrae userId desde el token)
   useEffect(() => {
     const fetchRecommendations = async () => {
-      if (!userId) return;
-      
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(`${API}/recommendations?userId=${userId}`, {
+        if (!token) return; // si no hay token, no pedimos recomendaciones
+
+        const res = await axios.get(`${API}/recommendations`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -49,6 +46,7 @@ export default function PropertiesPage({ onLogout }) {
             }
           });
         }
+        console.log('Recomendaciones cargadas:', allRecommendedIds); // debug
         setRecommendedIds(allRecommendedIds);
       } catch (err) {
         console.error("Error cargando recomendaciones:", err.response?.data || err.message);
@@ -56,7 +54,7 @@ export default function PropertiesPage({ onLogout }) {
     };
 
     fetchRecommendations();
-  }, [API, userId]);
+  }, [API]);
 
   const fetchData = async (resetPage = false) => {
     try {
