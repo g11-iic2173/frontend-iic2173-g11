@@ -15,8 +15,10 @@ export default function Login({ onLogin, onToggle }) {
       });
 
       localStorage.setItem("token", res.data.access_token);
+      localStorage.setItem("role", res.data.role);
+      localStorage.setItem("username", res.data.username);
 
-      onLogin();
+      onLogin(res.data);
     } catch (err) {
       alert(err.response?.data?.error || "Error al iniciar sesión");
     }
@@ -32,9 +34,7 @@ export default function Login({ onLogin, onToggle }) {
         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
         <button type="submit">Entrar</button>
       </form>
-      <p onClick={onToggle} >
-        ¿No tienes cuenta? Registrarse
-      </p>
+      <p onClick={onToggle}>¿No tienes cuenta? Registrarse</p>
     </div>
   );
 }
