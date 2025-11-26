@@ -11,7 +11,7 @@ export default function PropertiesPage({ onLogout }) {
   const [page, setPage] = useState(1);
   const [userEmail, setUserEmail] = useState("")
   // Recomendaciones
-  const [recommendedIds, setRecommendedIds] = useState(new Set());
+  //const [recommendedIds, setRecommendedIds] = useState(new Set());
   const API = import.meta.env.VITE_API_BASE_URL || "https://api.propiedadesarquisis.me/api";
   const location = useLocation();
 
@@ -34,65 +34,79 @@ export default function PropertiesPage({ onLogout }) {
   }, []);
 
   // Cargar recomendaciones (el backend extrae userId desde el token)
-  useEffect(() => {
-  const fetchRecommendations = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
+  //useEffect(() => {
+  //const fetchRecommendations = async () => {
+  //  try {
+  //    const token = localStorage.getItem("token");
+  //    if (!token) return;
 
-      const decoded = jwtDecode(token);
-      const email = decoded.mail || decoded.email;
-      if (!email) return;
+  //    const decoded = jwtDecode(token);
+  //    const email = decoded.mail || decoded.email;
+  //    if (!email) return;
 
-      const res = await axios.get(`${API}/recommendations`, {
-        params: { userId: email },   // 👈 AHORA SÍ
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  //    const res = await axios.get(`${API}/recommendations`, {
+  //      params: { userId: email },   // 👈 AHORA SÍ
+  //      headers: { Authorization: `Bearer ${token}` },
+  //    });
 
-      const allRecommendedIds = new Set();
-      if (Array.isArray(res.data)) {
-        res.data.forEach((p) => {
-          if (p.id) allRecommendedIds.add(p.id);
-        });
-      }
+  //    const allRecommendedIds = new Set();
+  //    if (Array.isArray(res.data)) {
+  //      res.data.forEach((p) => {
+  //        if (p.id) allRecommendedIds.add(p.id);
+  //      });
+  //    }
 
-      setRecommendedIds(allRecommendedIds);
-    } catch (err) {
-      console.error("Error cargando recomendaciones:", err.response?.data || err.message);
-    }
-  };
+  //    setRecommendedIds(allRecommendedIds);
+  //  } catch (err) {
+  //    console.error("Error cargando recomendaciones:", err.response?.data || err.message);
+  //  }
+  //};
 
-  fetchRecommendations();
-}, [API]);
+  //fetchRecommendations();
+//}, [API]);
 
 
   const fetchData = async (resetPage = false) => {
-    try {
-      const token = localStorage.getItem("token");
+  try {
+    const token = localStorage.getItem("token");
 
-      let res;
-      if (filters.id) {
-        // busquedad por id
-        res = await axios.get(`${API}/properties/${filters.id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setProperties([res.data]);
-      } else {
-        // otras busquedad
-        const params = { ...filters, page: resetPage ? 1 : page, limit };
-        res = await axios.get(`${API}/properties`, {
-          params,
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setProperties(res.data);
+    let email = null;
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        email = decoded.mail || decoded.email || null;
+      } catch {
+        email = null;
+      }
+    }
+
+    let res;
+    if (filters.id) {
+      // búsqueda por id
+      res = await axios.get(`${API}/properties/${filters.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProperties([res.data]);
+    } else {
+      // otras búsquedas + userId para recomendaciones
+      const params = { ...filters, page: resetPage ? 1 : page, limit };
+      if (email) {
+        params.userId = email; // 👈 esto alimenta la lógica de recomendaciones en el backend
       }
 
-      if (resetPage) setPage(1);
-    } catch (err) {
-      console.error("Error cargando propiedades:", err.response?.data || err.message);
-      setProperties([]);
+      res = await axios.get(`${API}/properties`, {
+        params,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProperties(res.data);
     }
-  };
+
+    if (resetPage) setPage(1);
+  } catch (err) {
+    console.error("Error cargando propiedades:", err.response?.data || err.message);
+    setProperties([]);
+  }
+};
 
   useEffect(() => {
     fetchData();
@@ -187,16 +201,18 @@ export default function PropertiesPage({ onLogout }) {
                 <Link to={`/properties/${p.id}`}><strong>{p.name}</strong></Link> — {p.price} {p.currency} — {p.location}
               </div>
               
-              {recommendedIds.has(p.id) && ( /* Recomendaciones*/
-                <span style={{
-                  backgroundColor: "#4CAF50",
-                  color: "white",
-                  padding: "4px 12px",
-                  borderRadius: "12px",
-                  fontSize: "12px",
-                  fontWeight: "600",
-                  whiteSpace: "nowrap"
-                }}>
+              {p.recommended && (
+                <span
+                  style={{
+                    backgroundColor: "#4CAF50",
+                    color: "white",
+                    padding: "4px 12px",
+                    borderRadius: "12px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   ⭐ Recomendado
                 </span>
               )}
