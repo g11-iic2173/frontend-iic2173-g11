@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 export default function PropertiesPage({ onLogout }) {
   const [properties, setProperties] = useState([]);
@@ -12,7 +13,13 @@ export default function PropertiesPage({ onLogout }) {
   // Recomendaciones
   const [recommendedIds, setRecommendedIds] = useState(new Set());
   const API = import.meta.env.VITE_API_BASE_URL || "https://api.propiedadesarquisis.me/api";
+  const location = useLocation();
 
+  useEffect(() => {
+    if (location.state?.error) {
+      alert(location.state.error);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
