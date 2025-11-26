@@ -35,34 +35,36 @@ export default function PropertiesPage({ onLogout }) {
 
   // Cargar recomendaciones (el backend extrae userId desde el token)
   useEffect(() => {
-    const fetchRecommendations = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        console.log('Token enviado:', token ? 'EXISTS' : 'NULL'); // debug
-        if (!token) return; // si no hay token, no pedimos recomendaciones
+  const fetchRecommendations = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-        const res = await axios.get(`${API}/recommendations`, {
-          headers: { Authorization: `Bearer ${token}` },
+      const decoded = jwtDecode(token);
+      const email = decoded.mail || decoded.email;
+      if (!email) return;
+
+      const res = await axios.get(`${API}/recommendations`, {
+        params: { userId: email },   // 👈 AHORA SÍ
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const allRecommendedIds = new Set();
+      if (Array.isArray(res.data)) {
+        res.data.forEach((p) => {
+          if (p.id) allRecommendedIds.add(p.id);
         });
-
-        // Combinar todos los recommendationIds en un Set para búsqueda rápida
-        const allRecommendedIds = new Set();
-        if (Array.isArray(res.data)) {
-          res.data.forEach(rec => {
-            if (Array.isArray(rec.recommendationIds)) {
-              rec.recommendationIds.forEach(id => allRecommendedIds.add(id));
-            }
-          });
-        }
-        console.log('Recomendaciones cargadas:', allRecommendedIds); // debug
-        setRecommendedIds(allRecommendedIds);
-      } catch (err) {
-        console.error("Error cargando recomendaciones:", err.response?.data || err.message);
       }
-    };
 
-    fetchRecommendations();
-  }, [API]);
+      setRecommendedIds(allRecommendedIds);
+    } catch (err) {
+      console.error("Error cargando recomendaciones:", err.response?.data || err.message);
+    }
+  };
+
+  fetchRecommendations();
+}, [API]);
+
 
   const fetchData = async (resetPage = false) => {
     try {
