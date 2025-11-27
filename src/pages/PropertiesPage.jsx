@@ -96,8 +96,8 @@ export default function PropertiesPage({ onLogout }) {
 
       console.log("👉 fetchData params:", params, "email:", email, "API:", API);
 
-      res = await axios.get(`${API}/properties`, {
-        params,
+      const queryString = new URLSearchParams(params).toString();
+      res = await axios.get(`${API}/properties?${queryString}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProperties(res.data);
