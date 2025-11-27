@@ -94,6 +94,8 @@ export default function PropertiesPage({ onLogout }) {
         params.userId = email; // 👈 esto alimenta la lógica de recomendaciones en el backend
       }
 
+      console.log("👉 fetchData params:", params, "email:", email, "API:", API);
+
       res = await axios.get(`${API}/properties`, {
         params,
         headers: { Authorization: `Bearer ${token}` },
