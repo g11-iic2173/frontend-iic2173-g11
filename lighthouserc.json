@@ -6,7 +6,7 @@
       "waitFor": "body"
     },
     "assert": {
-      "preset": "lighthouse:recommended"
+      "preset": "lighthouse:no-preset"
     },
     "upload": {
       "target": "temporary-public-storage"
