@@ -23,33 +23,50 @@ export default function PropertiesPage({ onLogout }) {
     }
   }, [location.state]);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        setUserEmail(decoded.mail || decoded.email || "Usuario");
-        setUserRole(decoded.role || null); 
-      } catch {
-        setUserEmail("Usuario");
-      }
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      const email = decoded.mail || decoded.email;
+      setUserEmail(email || "Usuario"); // ❗ Guardamos email real si existe
+      setUserRole(decoded.role || null);
+    } catch (err) {
+      console.warn("No se pudo decodificar token:", err);
+      setUserEmail("Usuario");
+      setUserRole(null);
     }
-  }, []);
+  } else {
+    console.warn("No se encontró token en localStorage");
+    setUserEmail("Usuario");
+    setUserRole(null);
+  }
+}, []);
+
 
 
 
   const fetchData = async (resetPage = false) => {
   try {
     const token = localStorage.getItem("token");
-
     let email = null;
+
     if (token) {
       try {
         const decoded = jwtDecode(token);
         email = decoded.mail || decoded.email || null;
-      } catch {
-        email = null;
+        if (!email) {
+          console.warn("Token decodificado no tiene email/mail");
+        }
+      } catch (err) {
+        console.warn("Error decodificando token:", err);
       }
+    }
+
+    // ❗ Fallback temporal: solo para probar recomendaciones si no hay email
+    if (!email) {
+      console.warn("userId no detectado, se usará fallback temporal");
+      email = "test@example.com"; // reemplazar por un usuario real de pruebas
     }
 
     let res;
@@ -61,19 +78,16 @@ export default function PropertiesPage({ onLogout }) {
       setProperties([res.data]);
     } else {
       // otras búsquedas + userId para recomendaciones
-      const params = { ...filters, page: resetPage ? 1 : page, limit };
-      if (email) {
-        params.userId = email; // 👈 esto alimenta la lógica de recomendaciones en el backend
-      }
+      const params = { ...filters, page: resetPage ? 1 : page, limit, userId: email };
 
-      console.log("👉 fetchData params:", params, "email:", email, "API:", API);
+      console.log("👉 fetchData params:", params);
 
       const queryString = new URLSearchParams(params).toString();
       res = await axios.get(`${API}/properties?${queryString}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log("👉 RESPUESTA BACKEND:", res);
+      console.log("👉 RESPUESTA BACKEND:", res.data);
       setProperties(res.data);
     }
 
@@ -83,6 +97,7 @@ export default function PropertiesPage({ onLogout }) {
     setProperties([]);
   }
 };
+
 
   useEffect(() => {
     fetchData();
