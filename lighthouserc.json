@@ -2,7 +2,8 @@
   "ci": {
     "collect": {
       "staticDistDir": "./dist",
-      "url": ["/index.html"]
+      "url": ["/index.html"],
+      "waitFor": "body"
     },
     "assert": {
       "preset": "lighthouse:recommended"
