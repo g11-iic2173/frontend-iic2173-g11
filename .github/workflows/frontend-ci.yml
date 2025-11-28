@@ -29,22 +29,5 @@ jobs:
       - name: Build project
         run: npm run build
 
-      # Levantar un servidor estático para la build
-      - name: Start server
-        run: |
-          npx serve -s dist -l 5000 &
-          echo "Server started"
-        # exportar el PID para poder detenerlo al final
-        env:
-          PORT: 5000
-
-      - name: Wait for server to be ready
-        run: npx wait-on http://localhost:5000
-
       - name: Run Lighthouse CI
-        run: |
-          npx lhci autorun --url=http://localhost:5000
-
-      - name: Stop server
-        run: |
-          kill $(lsof -t -i:5000)
+        run: npx lhci autorun
