@@ -35,5 +35,9 @@ jobs:
       - name: Install Lighthouse CI
         run: npm install -g @lhci/cli
 
+      - name: Verify Index Exists
+        run: curl -I http://localhost:45607/index.html
+
+
       - name: Run Lighthouse CI
         run: lhci autorun --config=./lighthouserc.json
