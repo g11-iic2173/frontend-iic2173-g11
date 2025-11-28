@@ -59,8 +59,7 @@ export default function ConfirmPurchaseModal({ open, onClose, purchaseData }) {
             ✕
           </button>
         </div>
-
-        {/* Contenido del modal */}
+        
         <div style={{ padding: "1.5rem" }}>
           <ConfirmPurchasePage initialData={purchaseData} />
         </div>

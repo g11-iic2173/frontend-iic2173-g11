@@ -4,8 +4,10 @@ import Login from "../components/Login";
 import Signup from "../components/Signup";
 
 export default function AuthPage() {
+  
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
+
   const handleLogin = (data) => {
     localStorage.setItem("token", data.access_token);
     localStorage.setItem("role", data.role);

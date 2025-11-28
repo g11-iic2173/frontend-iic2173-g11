@@ -21,24 +21,32 @@ export default function PurchaseCompletedPage() {
     const qp = new URLSearchParams(search);
     const token_ws = qp.get("token_ws");
     const property_id = qp.get("property_id");
-    const request_id = qp.get("request_id");
 
     if (!token_ws || !property_id) {
-      setError("Compra anulada por el Usuario.");
+      setError("Compra anulada o incompleta. No se recibió token de pago.");
       setLoading(false);
       return;
     }
+
     (async () => {
       setLoading(true);
       setError("");
+
       try {
         const headers = getAuthHeaders();
-        const body = request_id ? { token_ws, property_id, request_id } : { token_ws, property_id };
+        const body = { token_ws, property_id };
+
         const res = await axios.post(`${API}/purchases/commit`, body, { headers });
         setResult(res.data || null);
+
       } catch (e) {
         console.error("commit error:", e?.response?.data || e.message || e);
-        setError(e?.response?.data?.error || "Pago Rechazado por Transbank");
+
+        setError(
+          e?.response?.data?.error ||
+          e?.response?.data?.message ||
+          "Pago Rechazado por Transbank"
+        );
       } finally {
         setLoading(false);
       }
@@ -75,9 +83,11 @@ export default function PurchaseCompletedPage() {
     <div style={{ padding: 16 }}>
       <h2>Compra confirmada</h2>
       <p style={{ marginTop: 8 }}>{message || "Operación procesada"}</p>
+
       <p style={{ marginTop: 8 }}>
         <strong>Propiedad:</strong> {property_name || "-"}
       </p>
+
       <p>
         <strong>Enlace:</strong>{" "}
         {property_url ? (

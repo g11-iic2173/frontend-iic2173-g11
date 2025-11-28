@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+
 import PurchaseDetailModal from "../components/PurchaseDetailModal";
 import PropertyDetailPage from "./PropertyDetailPage";
 
@@ -14,12 +15,11 @@ export default function MyVisitsPage() {
 
   const pollRef = useRef(null);
 
-  // --- función para cargar compras del usuario
-  const fetchPurchases = async () => {
+  const fetchPurchases = useCallback(async () => {
     if (!token) {
       setLoading(false);
       alert("Debes iniciar sesión para ver tus visitas");
-      return;
+      return [];
     }
     try {
       const res = await axios.get(`${API}/purchases`, {
@@ -40,9 +40,27 @@ export default function MyVisitsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API, token]);
 
-  // --- arranque inicial + foco de ventana
+  const startPolling = useCallback(() => {
+    if (pollRef.current) return;
+
+    pollRef.current = setInterval(async () => {
+      const data = await fetchPurchases();
+      const pendingLeft = (data || []).some(
+        (p) => String(p.status).toLowerCase() === "pending"
+      );
+      if (!pendingLeft) stopPolling();
+    }, 5000);
+  }, [fetchPurchases, stopPolling]);
+
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
     fetchPurchases().then((data) => {
       const hasPending = (data || []).some(
@@ -58,26 +76,7 @@ export default function MyVisitsPage() {
       window.removeEventListener("focus", onFocus);
       stopPolling();
     };
-  }, [API, token]);
-
-  // --- iniciar/detener polling
-  const startPolling = () => {
-    if (pollRef.current) return;
-    pollRef.current = setInterval(async () => {
-      const data = await fetchPurchases();
-      const pendingLeft = (data || []).some(
-        (p) => String(p.status).toLowerCase() === "pending"
-      );
-      if (!pendingLeft) stopPolling();
-    }, 5000);
-  };
-
-  const stopPolling = () => {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-  };
+  }, [API, token, fetchPurchases, startPolling, stopPolling]);
 
   if (loading) return <p>Cargando…</p>;
 
