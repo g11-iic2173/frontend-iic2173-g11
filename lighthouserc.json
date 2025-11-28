@@ -5,9 +5,6 @@
       "url": ["/"],
       "waitFor": "body"
     },
-    "assert": {
-      "preset": "lighthouse:no-preset"
-    },
     "upload": {
       "target": "temporary-public-storage"
     }

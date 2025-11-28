@@ -29,6 +29,6 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Run Lighthouse CI (no-fail)
+      - name: Run Lighthouse CI
         run: |
           npx lhci autorun || echo "Lighthouse completed (failures ignored)"
