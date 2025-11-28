@@ -36,37 +36,6 @@ export default function PropertiesPage({ onLogout }) {
     }
   }, []);
 
-  // Cargar recomendaciones (el backend extrae userId desde el token)
-  //useEffect(() => {
-  //const fetchRecommendations = async () => {
-  //  try {
-  //    const token = localStorage.getItem("token");
-  //    if (!token) return;
-
-  //    const decoded = jwtDecode(token);
-  //    const email = decoded.mail || decoded.email;
-  //    if (!email) return;
-
-  //    const res = await axios.get(`${API}/recommendations`, {
-  //      params: { userId: email },   // 👈 AHORA SÍ
-  //      headers: { Authorization: `Bearer ${token}` },
-  //    });
-
-  //    const allRecommendedIds = new Set();
-  //    if (Array.isArray(res.data)) {
-  //      res.data.forEach((p) => {
-  //        if (p.id) allRecommendedIds.add(p.id);
-  //      });
-  //    }
-
-  //    setRecommendedIds(allRecommendedIds);
-  //  } catch (err) {
-  //    console.error("Error cargando recomendaciones:", err.response?.data || err.message);
-  //  }
-  //};
-
-  //fetchRecommendations();
-//}, [API]);
 
 
   const fetchData = async (resetPage = false) => {
@@ -103,6 +72,8 @@ export default function PropertiesPage({ onLogout }) {
       res = await axios.get(`${API}/properties?${queryString}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      console.log("👉 RESPUESTA BACKEND:", res);
       setProperties(res.data);
     }
 
