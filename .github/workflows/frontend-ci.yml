@@ -29,6 +29,9 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Verify build contains index.html
+        run: ls -l dist
+
       - name: Install Lighthouse CI
         run: npm install -g @lhci/cli
 
