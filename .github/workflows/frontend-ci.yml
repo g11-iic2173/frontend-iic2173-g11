@@ -35,9 +35,14 @@ jobs:
       - name: Install Lighthouse CI
         run: npm install -g @lhci/cli
 
+      - name: Serve build folder
+        run: npx serve -s dist -l 45607 &
+      
+      - name: Wait for server to be ready
+        run: npx wait-on http://localhost:45607
+
       - name: Verify Index Exists
         run: curl -I http://localhost:45607/index.html
-
 
       - name: Run Lighthouse CI
         run: lhci autorun --config=./lighthouserc.json
