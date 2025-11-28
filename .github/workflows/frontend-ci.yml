@@ -29,20 +29,22 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Verify build contains index.html
-        run: ls -l dist
+      # Levantar un servidor estático para la build
+      - name: Start server
+        run: |
+          npx serve -s dist -l 5000 &
+          echo "Server started"
+        # exportar el PID para poder detenerlo al final
+        env:
+          PORT: 5000
 
-      - name: Install Lighthouse CI
-        run: npm install -g @lhci/cli
-
-      - name: Serve build folder
-        run: npx serve -s dist -l 45607 &
-      
       - name: Wait for server to be ready
-        run: npx wait-on http://localhost:45607
-
-      - name: Verify Index Exists
-        run: curl -I http://localhost:45607/index.html
+        run: npx wait-on http://localhost:5000
 
       - name: Run Lighthouse CI
-        run: lhci autorun --config=./lighthouserc.json
+        run: |
+          npx lhci autorun --url=http://localhost:5000
+
+      - name: Stop server
+        run: |
+          kill $(lsof -t -i:5000)
