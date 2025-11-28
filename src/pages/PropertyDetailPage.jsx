@@ -222,7 +222,7 @@ export default function PropertyDetailPage() {
       </div> */}
 
       <button disabled={!canBuy} onClick={handleBuy}>
-        {canBuy ? "Comprar agendamiento" : "Saldo cupos"}
+        {canBuy ? "Comprar agendamiento" : "sin cupos"}
       </button>
 
       <div style={{ marginTop: 12 }}>
