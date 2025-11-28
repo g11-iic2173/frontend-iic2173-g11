@@ -3,11 +3,12 @@ import AuthPage from "./pages/AuthPage";
 import PropertiesPage from "./pages/PropertiesPage";
 import PropertyDetailPage from "./pages/PropertyDetailPage";
 import MyVisitsPage from "./pages/MyVisitsPage";
+import ReservedVisitsPage from "./pages/ReservedVisitsPage";
 import ConfirmPurchasePage from "./pages/ConfirmPurchasePage";
 import PurchaseCompletedPage from "./pages/PurchaseCompletedPage";
-import AdminPage from "./pages/AdminPage";
 import RequireAuth from "./components/RequireAuth";
-import AdminRoute from "./components/AdminRoute";
+import ConfirmAdminSale from "./pages/ConfirmAdminSale";
+import AdminSaleCompleted from "./pages/AdminSaleCompleted";
 
 function App() {
   const navigate = useNavigate();
@@ -29,19 +30,12 @@ function App() {
   return (
     <Routes>
       <Route path="/auth" element={<AuthPage onLogin={handleLogin} />} />
-      <Route path="/"
+      <Route
+        path="/"
         element={
           <RequireAuth>
             <PropertiesPage onLogout={handleLogout} />
           </RequireAuth>
-        }
-      />
-      <Route
-        path="/admin"
-        element={
-          <AdminRoute>
-            <AdminPage onLogout={handleLogout} />
-          </AdminRoute>
         }
       />
       <Route
@@ -60,6 +54,7 @@ function App() {
           </RequireAuth>
         }
       />
+      <Route path="/reserved-visits" element={<ReservedVisitsPage />} />
       <Route
         path="/confirm-purchase"
         element={
@@ -74,6 +69,18 @@ function App() {
           <RequireAuth>
             <PurchaseCompletedPage />
           </RequireAuth>
+        }
+      />
+      <Route
+        path="/confirm-admin-sale/:id"
+        element={
+            <ConfirmAdminSale />
+        }
+      />
+      <Route
+        path="/admin-sale-completed"
+        element={
+            <AdminSaleCompleted />
         }
       />
     </Routes>

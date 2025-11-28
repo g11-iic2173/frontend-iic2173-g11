@@ -9,8 +9,9 @@ export default function AuthPage() {
   const handleLogin = (data) => {
     localStorage.setItem("token", data.access_token);
     localStorage.setItem("role", data.role);
-    if (data.role === "admin") navigate("/admin");
-    else navigate("/");
+    // if (data.role === "admin") navigate("/admin");
+    // else navigate("/");
+    navigate("/");
   };
 
   return (

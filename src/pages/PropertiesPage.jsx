@@ -10,6 +10,8 @@ export default function PropertiesPage({ onLogout }) {
   const [limit, setLimit] = useState(25);
   const [page, setPage] = useState(1);
   const [userEmail, setUserEmail] = useState("")
+  const [userRole, setUserRole] = useState(null);
+
   // Recomendaciones
   //const [recommendedIds, setRecommendedIds] = useState(new Set());
   const API = import.meta.env.VITE_API_BASE_URL || "https://api.propiedadesarquisis.me/api";
@@ -27,6 +29,7 @@ export default function PropertiesPage({ onLogout }) {
       try {
         const decoded = jwtDecode(token);
         setUserEmail(decoded.mail || decoded.email || "Usuario");
+        setUserRole(decoded.role || null); 
       } catch {
         setUserEmail("Usuario");
       }
@@ -124,13 +127,19 @@ export default function PropertiesPage({ onLogout }) {
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
         <h2 style={{ margin: 0, flex: 1 }}>Propiedades</h2>
 
-        {/* Botón Mis visitas */}
-        <Link to="/my-visits">
-          <button>Mis visitas</button>
+        {/* Botones según rol */}
+        {userRole === "user" && (
+          <Link to="/my-visits">
+            <button>Mis visitas</button>
+          </Link>
+        )}
+
+        <Link to="/reserved-visits">
+          <button>Visitas reservadas</button>
         </Link>
 
-        {/* Cerrar sesión */}
         <button onClick={onLogout}>Cerrar sesión</button>
+
       </div>
 
       <p style={{ marginTop: 0 }}>Usuario: <strong>{userEmail}</strong></p>
