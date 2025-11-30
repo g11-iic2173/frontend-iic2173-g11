@@ -13,6 +13,8 @@ export default function ReservedVisitsPage() {
   const [offersModalOpen, setOffersModalOpen] = useState(false);
   const [offersPropertyUrl, setOffersPropertyUrl] = useState(null);
   const [editAmounts, setEditAmounts] = useState({});
+  const [localAuctionDisabled, setLocalAuctionDisabled] = useState({});
+  const [inFlightAuctions, setInFlightAuctions] = useState({});
   const th = { padding: 8, border: "1px solid #ddd" };
 
   const API = import.meta.env.VITE_API_BASE_URL || "https://api.propiedadesarquisis.me/api";
@@ -87,6 +89,42 @@ export default function ReservedVisitsPage() {
       return null;
     }
   }
+
+  const handleSubasta = async (p) => {
+    // If the property was already finally auctioned/awarded, block both actions
+    if (p.propertyAuctioned) {
+      alert("Esta propiedad ya fue adjudicada; no se pueden realizar subastas ni ver ofertas.");
+      return;
+    }
+
+    // If the purchase already has an auction recorded, mark locally disabled and inform
+    if (p.wasAuctioned) {
+      alert("Ya se hizo");
+      setLocalAuctionDisabled((prev) => ({ ...prev, [p.url]: true }));
+      return;
+    }
+
+    // Prevent duplicate in-flight requests
+    if (inFlightAuctions[p.url]) return;
+
+    try {
+      setInFlightAuctions((prev) => ({ ...prev, [p.url]: true }));
+      const res = await doAuction(p.url);
+
+      // On success, disable locally and refresh list
+      if (res) {
+        alert("Ya se hizo");
+        setLocalAuctionDisabled((prev) => ({ ...prev, [p.url]: true }));
+        fetchPurchases();
+      }
+    } finally {
+      setInFlightAuctions((prev) => {
+        const copy = { ...prev };
+        delete copy[p.url];
+        return copy;
+      });
+    }
+  };
   
 
   useEffect(() => {
@@ -281,13 +319,21 @@ export default function ReservedVisitsPage() {
                 {userRole === "admin" && (
                   <>
                     <td style={th}>
-                      <button onClick={() => doAuction(p.url)} disabled={!!p.wasAuctioned}>
+                      <button
+                        onClick={() => handleSubasta(p)}
+                        disabled={
+                          !!p.propertyAuctioned ||
+                          !!localAuctionDisabled[p.url] ||
+                          !!p.wasAuctioned ||
+                          !!inFlightAuctions[p.url]
+                        }
+                      >
                         Subasta
                       </button>
                     </td>
 
                     <td style={th}>
-                      {p.wasAuctioned ? (
+                      {p.wasAuctioned && !p.propertyAuctioned ? (
                         <button
                           onClick={() => {
                             setOffersPropertyUrl(p.url);
