@@ -2,20 +2,20 @@
 
 Este documento describe el flujo completo de **Integración Continua (CI)** y **Despliegue Continuo (CD)** configurado para el proyecto frontend utilizando **GitHub Actions**, **AWS S3** y **AWS CloudFront**.
 
-El flujo de CD se ejecuta automáticamente con cada **push o merge a la rama `main`**, mientras que el flujo de CI se ejecuta con **push, merge o pull request a las ramas `main` y `dev`**.
+El flujo de CD se ejecuta automáticamente con cada **push o merge a la rama `main`**, al igual que el flujo de CI, pero CD solo se ejecuta si se pasó primero CI.
 
-El pipeline consta de dos archivos, uno que cubre la **integración continua (CI)** y otro que cubre el **despliegue continuo (CD)**.
+El pipeline consta de un archivo que cubre la **integración continua (CI)** y el **despliegue continuo (CD)**.
 
 ---
 
 # Flujo de Integración Continua (CI)
 
-Archivo: `.github/workflows/frontend-ci.yml`
+Archivo: `.github/workflows/ci-cd.yml`
 
 La CI se ejecuta automáticamente cuando:
 
-* Se abre un **pull request** hacia `main` o `dev`.
-* Se realiza un **push** directo a la rama `dev`.
+* Se abre un **pull request** hacia `main`.
+* Se realiza un **push** directo a la rama.
 
 ## Objetivos del CI
 
@@ -52,8 +52,6 @@ Se instala Lighthouse globalmente y se ejecuta con la configuración definida en
 ---
 
 # Flujo de Despliegue Continuo (CD)
-
-Archivo: `.github/workflows/deploy-frontend.yml`
 
 El CD se ejecuta automáticamente cuando:
 
@@ -108,14 +106,15 @@ Utiliza:
 
 # Resumen del Flujo Completo
 
-## CI (dev / pull requests)
+## CI
 
 * Valida calidad de código → ESLint.
 * Verifica que construya sin errores.
 * Mide performance → Lighthouse.
 
-## CD (main)
+## CD
 
+* Depende de CI
 * Compila código para producción.
 * Sube el build a S3.
 * Actualiza CloudFront con invalidación de caché.
