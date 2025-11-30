@@ -99,7 +99,7 @@ export default function ReservedVisitsPage() {
 
     // If the purchase already has an auction recorded, mark locally disabled and inform
     if (p.wasAuctioned) {
-      alert("Ya se hizo");
+      alert("Subasta Anunciada");
       setLocalAuctionDisabled((prev) => ({ ...prev, [p.url]: true }));
       return;
     }
