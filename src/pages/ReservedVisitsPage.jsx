@@ -171,6 +171,7 @@ export default function ReservedVisitsPage() {
                 <th style={th}>Nuevo monto</th>
                 <th style={th}>Detalle</th>
                 <th style={th}>Subasta</th>
+                <th style={th}>Ofertas</th>
             </>
             )}
 
@@ -278,22 +279,28 @@ export default function ReservedVisitsPage() {
                 )}
 
                 {userRole === "admin" && (
-                <>
-                  <td style={th}>
-                    <button onClick={() => doAuction(p.url)}>Subasta</button>
-                  </td>
+                  <>
+                    <td style={th}>
+                      <button onClick={() => doAuction(p.url)} disabled={!!p.wasAuctioned}>
+                        Subasta
+                      </button>
+                    </td>
 
-                  <td style={th}>
-                    <button
-                      onClick={() => {
-                        setOffersPropertyUrl(p.url);
-                        setOffersModalOpen(true);
-                      }}
-                    >
-                      Ver ofertas
-                    </button>
-                  </td>
-                </>
+                    <td style={th}>
+                      {p.wasAuctioned ? (
+                        <button
+                          onClick={() => {
+                            setOffersPropertyUrl(p.url);
+                            setOffersModalOpen(true);
+                          }}
+                        >
+                          Ver ofertas
+                        </button>
+                      ) : (
+                        null
+                      )}
+                    </td>
+                  </>
                 )}
 
                 {userRole !== "admin" && (
