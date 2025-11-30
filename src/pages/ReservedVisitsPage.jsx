@@ -4,11 +4,14 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
 import PurchaseDetailModal from "../components/PurchaseDetailModal";
+import OffersModal from "../components/OffersModal";
 
 export default function ReservedVisitsPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPurchase, setSelectedPurchase] = useState(null);
+  const [offersModalOpen, setOffersModalOpen] = useState(false);
+  const [offersPropertyUrl, setOffersPropertyUrl] = useState(null);
   const th = { padding: 8, border: "1px solid #ddd" };
 
   const API =
@@ -84,24 +87,25 @@ export default function ReservedVisitsPage() {
 
 
   const doAuction = async (url) => {
+    if (!token) {
+      alert("Debes iniciar sesión");
+      return [];
+    }
+
     try {
-      console.log("Bearer token:", token);
-      const res = await axios.post(`${API}/auctions/offers`, {
+      const payload = { url: url, quantity: 1 };
+      const res = await axios.post(`${API}/auctions/offers`, payload, {
         headers: { Authorization: `Bearer ${token}` },
-        body : {
-          property_url: url,
-          amount: 1
-        }
       });
 
-      const data = Array.isArray(res.data) ? res.data : [];
-      setItems(data);
+      // backend may return updated purchases or offer result; attempt to keep existing behaviour
+      const data = Array.isArray(res.data) ? res.data : res.data;
+      if (Array.isArray(data)) setItems(data);
       return data;
     } catch (e) {
-      console.error(
-        "Error cargando purchases admin:",
-        e?.response?.data || e.message
-      );
+      console.error("Error creando oferta de subasta:", e?.response?.data || e.message);
+      alert(e?.response?.data?.error || "Error al crear la oferta");
+      return null;
     }
   }
 
@@ -262,13 +266,22 @@ export default function ReservedVisitsPage() {
                 )}
 
                 {userRole === "admin" && (
-                <td style={th}>
+                <>
+                  <td style={th}>
+                    <button onClick={() => doAuction(p.url)}>Subasta</button>
+                  </td>
+
+                  <td style={th}>
                     <button
-                      onClick={() => doAuction(p.url)}
+                      onClick={() => {
+                        setOffersPropertyUrl(p.url);
+                        setOffersModalOpen(true);
+                      }}
                     >
-                      Subasta
+                      Ver ofertas
                     </button>
                   </td>
+                </>
                 )}
 
                 {userRole !== "admin" && (
@@ -295,6 +308,12 @@ export default function ReservedVisitsPage() {
           purchaseData={selectedPurchase}
         />
       )}
+
+      <OffersModal
+        open={offersModalOpen}
+        onClose={() => setOffersModalOpen(false)}
+        propertyUrl={offersPropertyUrl}
+      />
     </div>
   );
 }
