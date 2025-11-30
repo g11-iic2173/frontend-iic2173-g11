@@ -36,9 +36,10 @@ export default function PurchaseDetailModal({ open, onClose, purchaseData }) {
     };
 
     fetchPurchase();
-  }, [purchaseData]);
+  }, [purchaseData, API, token]);   // 👈 LINT FIX
 
   if (!open) return null;
+
   const parseNumber = (value) => {
     if (!value) return null;
     return Number(String(value).replace(/[^0-9.-]/g, ""));
@@ -48,19 +49,17 @@ export default function PurchaseDetailModal({ open, onClose, purchaseData }) {
   const propertyPrice =
     parseNumber(rawPropertyPrice) ||
     parseNumber(purchase.price_amount) * 10;
-  const originalTenPercent = propertyPrice * 0.1;
-  let schedulePrice;
 
+  const originalTenPercent = propertyPrice * 0.1;
+
+  let schedulePrice;
   if (userRole === "admin") {
     schedulePrice = originalTenPercent;
   } else {
     schedulePrice =
-      parseNumber(purchase.custom_price_amount) ||
-      originalTenPercent;
+      parseNumber(purchase.custom_price_amount) || originalTenPercent;
   }
 
-
-  // estado
   const statusStr = purchase ? String(purchase.status).toUpperCase() : "";
   let color = "orange";
   let statusEs = "Pendiente";
@@ -124,7 +123,6 @@ export default function PurchaseDetailModal({ open, onClose, purchaseData }) {
             <p style={{ color: "red" }}>{error}</p>
           ) : (
             <>
-
               <h2 style={{ margin: "0 0 12px 0" }}>Propiedad</h2>
               {purchase.propertie ? (
                 <div>
@@ -146,10 +144,7 @@ export default function PurchaseDetailModal({ open, onClose, purchaseData }) {
                   <p style={{ fontWeight: "bold", fontSize: "1.1rem" }}>
                     <Link
                       to={`/properties/${purchase.propertie.id}`}
-                      style={{
-                        color: "#007bff",
-                        textDecoration: "none",
-                      }}
+                      style={{ color: "#007bff", textDecoration: "none" }}
                       onClick={onClose}
                     >
                       {purchase.propertie.name}
@@ -160,9 +155,10 @@ export default function PurchaseDetailModal({ open, onClose, purchaseData }) {
 
                   <p style={{ marginTop: 10 }}>
                     <strong>Precio de propiedad:</strong>{" "}
-                    {propertyPrice.toLocaleString("es-CL")} {purchase.price_currency}
-                    {purchase.propertie.currency}
+                    {propertyPrice.toLocaleString("es-CL")}{" "}
+                    {purchase.price_currency}
                   </p>
+
                   <p>
                     <strong>Precio de agendamiento:</strong>{" "}
                     {schedulePrice.toFixed(0).toLocaleString()}{" "}
@@ -179,21 +175,24 @@ export default function PurchaseDetailModal({ open, onClose, purchaseData }) {
                   <strong>Fecha:</strong>{" "}
                   {new Date(purchase.createdAt).toLocaleString()}
                 </p>
+
                 <p>
                   <strong>Precio Propiedad:</strong>{" "}
-                  {propertyPrice.toLocaleString()} {purchase.price_currency}
+                  {propertyPrice.toLocaleString()}{" "}
+                  {purchase.price_currency}
                 </p>
+
                 <p>
                   <strong>Código de reserva:</strong>{" "}
                   <code>{purchase.request_id}</code>
                 </p>
+
                 <p>
                   <strong>Estado:</strong>{" "}
                   <span style={{ color, fontWeight: "bold" }}>{statusEs}</span>
                 </p>
               </div>
 
-              {/* boleta */}
               {(statusStr === "ACCEPTED" || statusStr === "APPROVED") && (
                 <div style={{ marginTop: 16 }}>
                   {purchase.receipt_url ? (

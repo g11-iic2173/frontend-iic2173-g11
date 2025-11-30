@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { Link } from "react-router-dom";
@@ -43,69 +43,70 @@ useEffect(() => {
   }
 }, []);
 
+const fetchData = useCallback(
+  async (resetPage = false) => {
+    try {
+      const token = localStorage.getItem("token");
+      let email = null;
 
-
-
-  const fetchData = async (resetPage = false) => {
-  try {
-    const token = localStorage.getItem("token");
-    let email = null;
-
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        email = decoded.mail || decoded.email || null;
-        if (!email) {
-          console.warn("Token decodificado no tiene email/mail");
+      if (token) {
+        try {
+          const decoded = jwtDecode(token);
+          email = decoded.mail || decoded.email || null;
+        } catch (err) {
+          console.warn("Error decodificando token:", err);
         }
-      } catch (err) {
-        console.warn("Error decodificando token:", err);
       }
+
+      if (!email) {
+        console.warn("userId no detectado, fallback temporal");
+        email = "test@example.com";
+      }
+
+      let res;
+      if (filters.id) {
+        res = await axios.get(`${API}/properties/${filters.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setProperties([res.data]);
+      } else {
+        const params = {
+          ...filters,
+          page: resetPage ? 1 : page,
+          limit,
+          userId: email,
+        };
+
+        const queryString = new URLSearchParams(params).toString();
+
+        res = await axios.get(`${API}/properties?${queryString}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setProperties(res.data);
+      }
+
+      if (resetPage) setPage(1);
+    } catch (err) {
+      console.error(
+        "Error cargando propiedades:",
+        err.response?.data || err.message
+      );
+      setProperties([]);
     }
-
-    // ❗ Fallback temporal: solo para probar recomendaciones si no hay email
-    if (!email) {
-      console.warn("userId no detectado, se usará fallback temporal");
-      email = "test@example.com"; // reemplazar por un usuario real de pruebas
-    }
-
-    let res;
-    if (filters.id) {
-      // búsqueda por id
-      res = await axios.get(`${API}/properties/${filters.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setProperties([res.data]);
-    } else {
-      // otras búsquedas + userId para recomendaciones
-      const params = { ...filters, page: resetPage ? 1 : page, limit, userId: email };
-
-      console.log("👉 fetchData params:", params);
-
-      const queryString = new URLSearchParams(params).toString();
-      res = await axios.get(`${API}/properties?${queryString}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      console.log("👉 RESPUESTA BACKEND:", res.data);
-      setProperties(res.data);
-    }
-
-    if (resetPage) setPage(1);
-  } catch (err) {
-    console.error("Error cargando propiedades:", err.response?.data || err.message);
-    setProperties([]);
-  }
-};
-
+  },
+  [API, filters, limit, page]
+);
 
   useEffect(() => {
     fetchData();
+
     const interval = setInterval(() => {
       fetchData();
     }, 5 * 60 * 1000);
+
     return () => clearInterval(interval);
-  }, [page, limit]);
+  }, [page, limit, fetchData]);
 
   return (
     <div style={{ padding: 16 }}>

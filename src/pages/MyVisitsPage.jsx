@@ -1,30 +1,33 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import PurchaseDetailModal from "../components/PurchaseDetailModal";
-import PropertyDetailPage from "./PropertyDetailPage";
 
 export default function MyVisitsPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPurchase, setSelectedPurchase] = useState(null); 
+  const [selectedPurchase, setSelectedPurchase] = useState(null);
 
   const API = import.meta.env.VITE_API_BASE_URL || "https://api.propiedadesarquisis.me/api";
   const token = localStorage.getItem("token");
 
   const pollRef = useRef(null);
 
-  // --- función para cargar compras del usuario
-  const fetchPurchases = async () => {
+  // -----------------------------------------
+  // ✅ fetchPurchases envuelto en useCallback
+  // -----------------------------------------
+  const fetchPurchases = useCallback(async () => {
     if (!token) {
       setLoading(false);
       alert("Debes iniciar sesión para ver tus visitas");
-      return;
+      return [];
     }
+
     try {
       const res = await axios.get(`${API}/purchases`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       const data = Array.isArray(res.data) ? res.data : [];
       setItems(data);
       return data;
@@ -40,14 +43,41 @@ export default function MyVisitsPage() {
     } finally {
       setLoading(false);
     }
+  }, [API, token]);
+
+  // -----------------------------------------
+  // ❇ startPolling envuelto en useCallback
+  // -----------------------------------------
+  const startPolling = useCallback(() => {
+    if (pollRef.current) return;
+
+    pollRef.current = setInterval(async () => {
+      const data = await fetchPurchases();
+
+      const pendingLeft = (data || []).some(
+        (p) => String(p.status).toLowerCase() === "pending"
+      );
+
+      if (!pendingLeft) stopPolling();
+    }, 5000);
+  }, [fetchPurchases]);
+
+  const stopPolling = () => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
   };
 
-  // --- arranque inicial + foco de ventana
+  // -----------------------------------------
+  // useEffect SIN warnings
+  // -----------------------------------------
   useEffect(() => {
     fetchPurchases().then((data) => {
       const hasPending = (data || []).some(
         (p) => String(p.status).toLowerCase() === "pending"
       );
+
       if (hasPending) startPolling();
     });
 
@@ -58,26 +88,8 @@ export default function MyVisitsPage() {
       window.removeEventListener("focus", onFocus);
       stopPolling();
     };
-  }, [API, token]);
+  }, [fetchPurchases, startPolling]);
 
-  // --- iniciar/detener polling
-  const startPolling = () => {
-    if (pollRef.current) return;
-    pollRef.current = setInterval(async () => {
-      const data = await fetchPurchases();
-      const pendingLeft = (data || []).some(
-        (p) => String(p.status).toLowerCase() === "pending"
-      );
-      if (!pendingLeft) stopPolling();
-    }, 5000);
-  };
-
-  const stopPolling = () => {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-  };
 
   if (loading) return <p>Cargando…</p>;
 
@@ -119,6 +131,7 @@ export default function MyVisitsPage() {
             <th style={{ padding: 8, border: "1px solid #ddd" }}>Detalle de compra</th>
           </tr>
         </thead>
+
         <tbody>
           {items.map((p) => {
             const statusStr = String(p.status).toUpperCase();
@@ -131,16 +144,21 @@ export default function MyVisitsPage() {
                 <td style={{ padding: 8, border: "1px solid #ddd" }}>
                   {p.createdAt ? new Date(p.createdAt).toLocaleString() : "-"}
                 </td>
+
                 <td style={{ padding: 8, border: "1px solid #ddd" }}>
                   {p.propertie ? (
                     <Link to={`/properties/${p.propertie.id}`}>
                       <strong>{p.propertie.name}</strong>
                     </Link>
-                  ) : "-"}
+                  ) : (
+                    "-"
+                  )}
                 </td>
+
                 <td style={{ padding: 8, border: "1px solid #ddd" }}>
                   {p.price_amount} {p.price_currency}
                 </td>
+
                 <td
                   style={{
                     padding: 8,
@@ -151,6 +169,7 @@ export default function MyVisitsPage() {
                 >
                   {statusStr}
                 </td>
+
                 <td
                   style={{
                     padding: 8,
@@ -160,6 +179,7 @@ export default function MyVisitsPage() {
                 >
                   {p.request_id ? p.request_id.slice(0, 8) : "-"}
                 </td>
+
                 <td
                   style={{
                     padding: 8,

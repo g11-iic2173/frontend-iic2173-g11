@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
@@ -27,11 +27,11 @@ export default function ReservedVisitsPage() {
 
   const pollRef = useRef(null);
 
-  const fetchPurchases = async () => {
+  const fetchPurchases = useCallback(async () => {
     if (!token) {
       setLoading(false);
       alert("Debes iniciar sesión");
-      return;
+      return [];
     }
 
     try {
@@ -59,6 +59,26 @@ export default function ReservedVisitsPage() {
     } finally {
       setLoading(false);
     }
+  }, [API, token]);
+
+  const startPolling = useCallback(() => {
+    if (pollRef.current) return;
+
+    pollRef.current = setInterval(async () => {
+      const data = await fetchPurchases();
+      const pendingLeft = (data || []).some(
+        (p) => String(p.status).toLowerCase() === "pending"
+      );
+
+      if (!pendingLeft) stopPolling();
+    }, 5000);
+  }, [fetchPurchases]);
+
+  const stopPolling = () => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
   };
 
   useEffect(() => {
@@ -77,27 +97,9 @@ export default function ReservedVisitsPage() {
       window.removeEventListener("focus", onFocus);
       stopPolling();
     };
-  }, [API, token]);
+  }, [fetchPurchases, startPolling]);
 
-  const startPolling = () => {
-    if (pollRef.current) return;
 
-    pollRef.current = setInterval(async () => {
-      const data = await fetchPurchases();
-      const pendingLeft = (data || []).some(
-        (p) => String(p.status).toLowerCase() === "pending"
-      );
-
-      if (!pendingLeft) stopPolling();
-    }, 5000);
-  };
-
-  const stopPolling = () => {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-  };
 
   if (loading) return <p>Cargando…</p>;
 
@@ -130,130 +132,132 @@ export default function ReservedVisitsPage() {
         }}
       >
         <thead style={{ backgroundColor: "#f2f2f2" }}>
-        <tr>
+          <tr>
             <th style={th}>Fecha</th>
             <th style={th}>Propiedad</th>
             <th style={th}>Precio propiedad</th>
             <th style={th}>Precio agendamiento</th>
 
             {userRole === "admin" && (
-            <>
+              <>
                 <th style={th}>Nuevo monto</th>
                 <th style={th}>Detalle</th>
                 <th style={th}>Subasta</th>
-            </>
+              </>
             )}
 
             {userRole !== "admin" && <th style={th}>Comprar</th>}
-        </tr>
+          </tr>
         </thead>
 
         <tbody>
-        {items.map((p) => {
+          {items.map((p) => {
             const schedulePrice = p.custom_price_amount
-            ? Number(p.custom_price_amount)
-            : Number(p.price_amount) * 0.1;
+              ? Number(p.custom_price_amount)
+              : Number(p.price_amount) * 0.1;
 
             return (
-            <tr key={p.id}>
+              <tr key={p.id}>
                 <td style={th}>
-                {p.createdAt ? new Date(p.createdAt).toLocaleString() : "-"}
+                  {p.createdAt ? new Date(p.createdAt).toLocaleString() : "-"}
                 </td>
 
                 <td style={th}>
-                {p.propertie ? (
+                  {p.propertie ? (
                     <Link to={`/properties/${p.propertie.id}`}>
-                    <strong>{p.propertie.name}</strong>
+                      <strong>{p.propertie.name}</strong>
                     </Link>
-                ) : (
+                  ) : (
                     "-"
-                )}
+                  )}
                 </td>
 
                 <td style={th}>
-                {Number(p.price_amount).toLocaleString("es-CL")} {p.price_currency}
+                  {Number(p.price_amount).toLocaleString("es-CL")}{" "}
+                  {p.price_currency}
                 </td>
 
                 <td style={th}>
-                {schedulePrice.toLocaleString("es-CL")} {p.price_currency}
+                  {schedulePrice.toLocaleString("es-CL")} {p.price_currency}
                 </td>
 
                 {userRole === "admin" && (
-                <td style={th}>
+                  <td style={th}>
                     <input
-                    type="number"
-                    defaultValue={schedulePrice}
-                    style={{
+                      type="number"
+                      defaultValue={schedulePrice}
+                      style={{
                         width: "100%",
                         padding: "6px",
                         borderRadius: 4,
                         border: "1px solid #ccc",
-                    }}
-                    onBlur={async (e) => {
+                      }}
+                      onBlur={async (e) => {
                         const newAmount = Number(e.target.value);
 
                         if (!newAmount || newAmount <= 0) {
-                        alert("Monto inválido");
-                        return;
+                          alert("Monto inválido");
+                          return;
                         }
 
                         try {
-                        await axios.patch(
+                          await axios.patch(
                             `${API}/purchases/purchase-intents/${p.id}/price`,
                             { newPrice: newAmount },
-                            { headers: { Authorization: `Bearer ${token}` } }
-                        );
+                            {
+                              headers: { Authorization: `Bearer ${token}` },
+                            }
+                          );
 
-                        alert("Precio actualizado");
-                        fetchPurchases();
+                          alert("Precio actualizado");
+                          fetchPurchases();
                         } catch (err) {
-                        console.error(err);
-                        alert(
+                          console.error(err);
+                          alert(
                             err.response?.data?.error ||
-                            "Error al actualizar el precio"
-                        );
+                              "Error al actualizar el precio"
+                          );
                         }
-                    }}
+                      }}
                     />
-                </td>
+                  </td>
                 )}
 
                 {userRole === "admin" && (
-                <td style={th}>
-                <button
-                    onClick={() => setSelectedPurchase(p)}
-                >
-                    Ver más
-                </button>
-                </td>
-                )}
-
-                {userRole === "admin" && (
-                <td style={th}>
-                    <button
-                    onClick={() => console.log("Subasta aún no implementada")}
-                    >
-                    Subasta
+                  <td style={th}>
+                    <button onClick={() => setSelectedPurchase(p)}>
+                      Ver más
                     </button>
-                </td>
+                  </td>
+                )}
+
+                {userRole === "admin" && (
+                  <td style={th}>
+                    <button
+                      onClick={() =>
+                        console.log("Subasta aún no implementada")
+                      }
+                    >
+                      Subasta
+                    </button>
+                  </td>
                 )}
 
                 {userRole !== "admin" && (
-                <td style={th}>
+                  <td style={th}>
                     <button
-                    onClick={() => {
+                      onClick={() => {
                         window.location.href = `/confirm-admin-sale/${p.id}`;
-                    }}
+                      }}
                     >
-                    Comprar
+                      Comprar
                     </button>
-                </td>
+                  </td>
                 )}
-            </tr>
+              </tr>
             );
-        })}
+          })}
         </tbody>
-
       </table>
 
       {selectedPurchase && (
