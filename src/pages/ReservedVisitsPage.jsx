@@ -76,7 +76,7 @@ export default function ReservedVisitsPage() {
     try {
       const payload = { url: url, quantity: 1 };
       const res = await axios.post(`${API}/auctions/offers`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}`, authorization: `Bearer ${token}` },
       });
 
       // backend may return updated purchases or offer result; attempt to keep existing behaviour
