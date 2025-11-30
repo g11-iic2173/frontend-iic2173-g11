@@ -5,11 +5,19 @@ import axios from "axios";
 export default function AdminSaleCompleted() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
+
   const token_ws = params.get("token_ws");
   const purchase_intent_id = params.get("purchase_intent_id");
-  const buyer_email = localStorage.getItem("email");
+
+  const buyer_email =
+    localStorage.getItem("email") ||
+    JSON.parse(localStorage.getItem("user"))?.email;
+
   const [message, setMessage] = useState("Procesando la compra…");
-  const API = import.meta.env.VITE_API_BASE_URL || "https://api.propiedadesarquisis.me/api";
+
+  const API =
+    import.meta.env.VITE_API_BASE_URL ||
+    "https://api.propiedadesarquisis.me/api";
 
   useEffect(() => {
     const confirmResale = async () => {
@@ -29,7 +37,8 @@ export default function AdminSaleCompleted() {
           { token_ws, purchase_intent_id, buyer_email },
           {
             headers: {
-              "Content-Type": "application/json"
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
