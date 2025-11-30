@@ -5,6 +5,9 @@ on:
     workflows: ["Frontend CI"]
     types: [completed]
 
+env:
+  BUILD_DIR: dist
+
 jobs:
   deploy:
     if: >
