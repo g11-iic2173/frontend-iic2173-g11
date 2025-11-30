@@ -125,6 +125,12 @@ const fetchData = useCallback(
           <button>Visitas reservadas</button>
         </Link>
 
+        {userRole === "admin" && (
+          <Link to="/auctions">
+            <button>Subastas</button>
+          </Link>
+        )}
+
         <button onClick={onLogout}>Cerrar sesión</button>
 
       </div>

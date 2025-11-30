@@ -27,6 +27,7 @@ export default function ReservedVisitsPage() {
 
   const pollRef = useRef(null);
 
+
   const fetchPurchases = useCallback(async () => {
     if (!token) {
       setLoading(false);
@@ -84,29 +85,27 @@ export default function ReservedVisitsPage() {
 
   const doAuction = async (url) => {
     try {
-      if (!token) {
-        alert("Debes iniciar sesión");
-        return [];
-      }
+      console.log("Bearer token:", token);
+      const res = await axios.post(`${API}/auctions/offers`, {
+        headers: { Authorization: `Bearer ${token}` },
+        body : {
+          property_url: url,
+          amount: 1
+        }
+      });
 
-      const res = await axios.post(
-        `${API}/auctions/offers`,
-        { url: url, quantity: 1 },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const data = res.data;
-      if (Array.isArray(data)) {
-        setItems(data);
-      }
+      const data = Array.isArray(res.data) ? res.data : [];
+      setItems(data);
       return data;
     } catch (e) {
       console.error(
-        "Error creando oferta de subasta:",
+        "Error cargando purchases admin:",
         e?.response?.data || e.message
       );
     }
   }
+
+  
 
   useEffect(() => {
     fetchPurchases().then((data) => {
@@ -152,6 +151,8 @@ export default function ReservedVisitsPage() {
           <button>← Volver a propiedades</button>
         </Link>
       </div>
+
+      
 
       <table
         style={{
@@ -261,11 +262,9 @@ export default function ReservedVisitsPage() {
                 )}
 
                 {userRole === "admin" && (
-                  <td style={th}>
+                <td style={th}>
                     <button
-                      onClick={() =>
-                        doAuction(p.url)
-                      }
+                      onClick={() => doAuction(p.url)}
                     >
                       Subasta
                     </button>

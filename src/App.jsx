@@ -9,6 +9,7 @@ import PurchaseCompletedPage from "./pages/PurchaseCompletedPage";
 import RequireAuth from "./components/RequireAuth";
 import ConfirmAdminSale from "./pages/ConfirmAdminSale";
 import AdminSaleCompleted from "./pages/AdminSaleCompleted";
+import AuctionsPage from "./pages/AuctionsPage";
 
 function App() {
   const navigate = useNavigate();
@@ -81,6 +82,14 @@ function App() {
         path="/admin-sale-completed"
         element={
             <AdminSaleCompleted />
+        }
+      />
+      <Route
+        path="/auctions"
+        element={
+          <RequireAuth>
+            <AuctionsPage />
+          </RequireAuth>
         }
       />
     </Routes>
