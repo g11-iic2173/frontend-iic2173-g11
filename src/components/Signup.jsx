@@ -5,6 +5,7 @@ export default function Signup({ onLogin, onToggle }) {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("user");
 
   const AUTH_URL = import.meta.env.VITE_AUTH_URL || "https://api.propiedadesarquisis.me/auth";
 
@@ -15,6 +16,7 @@ export default function Signup({ onLogin, onToggle }) {
         email,
         password,
         username,
+        role,
       });
       onLogin(res.data);
 
@@ -30,6 +32,40 @@ export default function Signup({ onLogin, onToggle }) {
       <form onSubmit={handleSubmit}>
         <label>Nombre:</label>
         <input value={username} onChange={(e) => setUsername(e.target.value)} />
+
+        <div style={{ margin: "8px 0" }}>
+          <label style={{ display: "block", marginBottom: 6 }}>Tipo de cuenta:</label>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              type="button"
+              onClick={() => setRole("user")}
+              aria-pressed={role === "user"}
+              style={{
+                padding: "6px 10px",
+                borderRadius: 6,
+                border: role === "user" ? "2px solid #0ea5e9" : "1px solid #ccc",
+                background: role === "user" ? "#e0f2fe" : "white",
+                cursor: "pointer",
+              }}
+            >
+              Usuario
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole("admin")}
+              aria-pressed={role === "admin"}
+              style={{
+                padding: "6px 10px",
+                borderRadius: 6,
+                border: role === "admin" ? "2px solid #f97316" : "1px solid #ccc",
+                background: role === "admin" ? "#fff7ed" : "white",
+                cursor: "pointer",
+              }}
+            >
+              Admin
+            </button>
+          </div>
+        </div>
 
         <label>Correo:</label>
         <input value={email} onChange={(e) => setEmail(e.target.value)} />

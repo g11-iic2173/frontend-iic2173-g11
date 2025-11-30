@@ -81,6 +81,33 @@ export default function ReservedVisitsPage() {
     }
   };
 
+
+  const doAuction = async (url) => {
+    try {
+      if (!token) {
+        alert("Debes iniciar sesión");
+        return [];
+      }
+
+      const res = await axios.post(
+        `${API}/auctions/offers`,
+        { url: url, quantity: 1 },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const data = res.data;
+      if (Array.isArray(data)) {
+        setItems(data);
+      }
+      return data;
+    } catch (e) {
+      console.error(
+        "Error creando oferta de subasta:",
+        e?.response?.data || e.message
+      );
+    }
+  }
+
   useEffect(() => {
     fetchPurchases().then((data) => {
       const hasPending = (data || []).some(
@@ -98,6 +125,8 @@ export default function ReservedVisitsPage() {
       stopPolling();
     };
   }, [fetchPurchases, startPolling]);
+
+  
 
 
 
@@ -235,7 +264,7 @@ export default function ReservedVisitsPage() {
                   <td style={th}>
                     <button
                       onClick={() =>
-                        console.log("Subasta aún no implementada")
+                        doAuction(p.url)
                       }
                     >
                       Subasta
