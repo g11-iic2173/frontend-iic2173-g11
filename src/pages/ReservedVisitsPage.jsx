@@ -87,33 +87,6 @@ export default function ReservedVisitsPage() {
       return null;
     }
   }
-
-  
-
-
-  const doAuction = async (url) => {
-    if (!token) {
-      alert("Debes iniciar sesión");
-      return [];
-    }
-
-    try {
-      const payload = { url: url, quantity: 1 };
-      const res = await axios.post(`${API}/auctions/offers`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      // backend may return updated purchases or offer result; attempt to keep existing behaviour
-      const data = Array.isArray(res.data) ? res.data : res.data;
-      if (Array.isArray(data)) setItems(data);
-      return data;
-    } catch (e) {
-      console.error("Error creando oferta de subasta:", e?.response?.data || e.message);
-      alert(e?.response?.data?.error || "Error al crear la oferta");
-      return null;
-    }
-  }
-
   
 
   useEffect(() => {
