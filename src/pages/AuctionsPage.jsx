@@ -92,7 +92,7 @@ export default function AuctionsPage() {
 
     const auction_id = event.id ?? item.auction_id ?? raw.auction_id ?? raw.id ?? property.id;
     const proposal_id = item.proposal_id ?? raw.proposal_id;
-    const urlToUpload = raw.url ?? item.url ?? property.url;
+    const urlToUpload = raw.url ?? item.url ?? property.url ?? raw.urlToUpload ?? item.urlToUpload ?? property.urlToUpload;
     const url = raw.img ?? property.img ?? item.img;
     const timestamp = event.timestamp ?? item.timestamp ?? property.timestamp;
     const quantity = raw.quantity ?? item.quantity ?? property.offers ?? 0;
@@ -110,6 +110,7 @@ export default function AuctionsPage() {
       auction_id,
       proposal_id,
       url,
+      urlToUpload,
       timestamp,
       formattedTimestamp,
       quantity,
