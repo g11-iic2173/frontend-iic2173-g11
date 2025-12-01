@@ -65,7 +65,7 @@ export default function AuctionsPage() {
 
     const payload = {
       auction_id: item.auction_id,
-      url: item.url,
+      url: item.urlToUpload,
       quantity,
     };
 
@@ -92,6 +92,7 @@ export default function AuctionsPage() {
 
     const auction_id = event.id ?? item.auction_id ?? raw.auction_id ?? raw.id ?? property.id;
     const proposal_id = item.proposal_id ?? raw.proposal_id;
+    const urlToUpload = raw.url ?? item.url ?? property.url;
     const url = raw.img ?? property.img ?? item.img;
     const timestamp = event.timestamp ?? item.timestamp ?? property.timestamp;
     const quantity = raw.quantity ?? item.quantity ?? property.offers ?? 0;
